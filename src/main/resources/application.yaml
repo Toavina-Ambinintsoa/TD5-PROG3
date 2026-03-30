@@ -1,3 +1,10 @@
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/td5_db
+    username: postgres
+    password: *******
+    driver-class-name: org.postgresql.Driver
+
+1spring:
   application:
     name: TD5

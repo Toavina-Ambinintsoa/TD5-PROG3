@@ -1,46 +1,74 @@
 package com.example.TD5.repository;
 
+import com.example.TD5.DataSource;
 import com.example.TD5.entity.Ingredient;
 import com.example.TD5.entity.StockValue;
 import com.example.TD5.entity.enums.IngredientType;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public class IngredientRepository {
 
-    private final JdbcTemplate jdbc;
-
-    public IngredientRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
-
     public List<Ingredient> findAll() {
-        String sql = "SELECT id, name,  price, category FROM ingredient";
-        return jdbc.query(sql, (rs, rowNum) -> new Ingredient(
-                rs.getInt("id"),
-                rs.getString("name"),
-                IngredientType.valueOf(rs.getString("category")),
-                rs.getDouble("price")
-        ));
+
+        String sql = "SELECT id, name, price, category FROM ingredient";
+        List<Ingredient> result = new ArrayList<>();
+
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                result.add(new Ingredient(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        IngredientType.valueOf(rs.getString("category")),
+                        rs.getDouble("price")
+                ));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 
     public Optional<Ingredient> findById(Long id) {
+
         String sql = "SELECT id, name, price, category FROM ingredient WHERE id = ?";
-        List<Ingredient> result = jdbc.query(sql, (rs, rowNum) -> new Ingredient(
-                rs.getInt("id"),
-                rs.getString("name"),
-                IngredientType.valueOf(rs.getString("category")),
-                rs.getDouble("price")
-        ), id);
-        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
+        Ingredient ingredient = null;
+
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                ingredient = new Ingredient(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        IngredientType.valueOf(rs.getString("category")),
+                        rs.getDouble("price")
+                );
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return Optional.ofNullable(ingredient);
     }
 
     public Optional<StockValue> findStockById(Long id, LocalDateTime at, String unit) {
+
         String sql = """
             SELECT COALESCE(SUM(
                 CASE WHEN sm.type = 'IN' THEN sm.quantity
@@ -51,7 +79,27 @@ public class IngredientRepository {
               AND sm.unit = ?
               AND sm.creation_datetime <= ?
             """;
-        Double stock = jdbc.queryForObject(sql, Double.class, id, unit, at);
-        return Optional.of(new StockValue(unit, stock != null ? stock : 0.0));
+
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, id);
+            stmt.setString(2, unit);
+            stmt.setTimestamp(3, Timestamp.valueOf(at));
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+
+                double stock = rs.getDouble("stock");
+
+                return Optional.of(new StockValue(unit, stock));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return Optional.empty();
     }
 }

@@ -1,29 +1,68 @@
 package com.example.TD5.entity;
 
+import com.example.TD5.entity.enums.IngredientType;
+
 public class Ingredient {
-    private Long id;
+    private Integer id;
     private String name;
     private String category;
+    private IngredientType type;
     private double price;
 
     public Ingredient() {}
 
-    public Ingredient(Long id, String name, String category, double price) {
+    public Ingredient(Integer id, String name, String category, IngredientType type, double price) {
         this.id = id;
         this.name = name;
         this.category = category;
+        this.type = type;
         this.price = price;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Ingredient(Integer id, String name, IngredientType type, double price) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
+        this.price = price;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public Integer getId() {
+        return id;
+    }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-    public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public IngredientType getType() {
+        return type;
+    }
+
+    public void setType(IngredientType type) {
+        this.type = type;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
 }

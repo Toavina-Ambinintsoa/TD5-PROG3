@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/td5_db
+    url: jdbc:postgresql://localhost:5432/mini_dish_db
     username: postgres
-    password: *******
+    password: toavina
     driver-class-name: org.postgresql.Driver
 
 1spring:
